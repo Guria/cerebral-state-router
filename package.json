@@ -4,7 +4,7 @@
   "description": "An opinionated state-driven URL change handler for Cerebral",
   "main": "index.js",
   "scripts": {
-    "test": "nodeunit tests"
+    "test": "nodeunit tests/test.js"
   },
   "repository": {
     "type": "git",
@@ -23,7 +23,8 @@
   "homepage": "https://github.com/Guria/cerebral-state-router#readme",
   "dependencies": {
     "addressbar": "^0.4.3",
-    "path-to-regexp": "^1.2.1"
+    "path-to-regexp": "^1.2.1",
+    "url-mapper": "christianalfoni/url-mapper#next"
   },
   "devDependencies": {
     "baobab": "^2.1.1",

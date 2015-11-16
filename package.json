@@ -1,0 +1,34 @@
+{
+  "name": "cerebral-state-router",
+  "version": "0.0.1",
+  "description": "An opinionated state-driven URL change handler for Cerebral",
+  "main": "index.js",
+  "scripts": {
+    "test": "nodeunit tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Guria/cerebral-state-router.git"
+  },
+  "keywords": [
+    "router",
+    "cerebral",
+    "state"
+  ],
+  "author": "Aleksey Guryanov <gurianov@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Guria/cerebral-state-router/issues"
+  },
+  "homepage": "https://github.com/Guria/cerebral-state-router#readme",
+  "dependencies": {
+    "addressbar": "^0.4.3",
+    "path-to-regexp": "^1.2.1"
+  },
+  "devDependencies": {
+    "baobab": "^2.1.1",
+    "cerebral": "^0.23.1",
+    "cerebral-baobab": "^0.3.2",
+    "nodeunit": "^0.9.1"
+  }
+}

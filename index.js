@@ -1,4 +1,3 @@
-var pathToRegexp = require('path-to-regexp');
 var addressbar = require('addressbar');
 var objectPath = require('object-path');
 var urlMapper = require('url-mapper')({ query: true });
@@ -97,7 +96,7 @@ function router (controller, routesConfig, options) {
     controller.on('change', onControllerChange);
     addressbar.on('change', onUrlChange);
     
-    return {
+    return controller.services.router = {
         trigger: onUrlChange,
 
         redirect: function(url, params) {

@@ -50,12 +50,12 @@ function router (controller, routesConfig, options) {
             }
         }
 
-        return url;
+        return options.baseUrl + url;
     }
 
     function onControllerChange() {
         var url = getUrl(controller.get());
-        addressbar.value = options.baseUrl + url;
+        addressbar.value = url;
     }
 
     function onUrlChange (event) {

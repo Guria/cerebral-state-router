@@ -29,36 +29,40 @@ var controller = Controller(Model({
     todo: {}
 }));
 var router = Router(controller, {
-   '/' : { 'core': ['module'], 'home': ['core', 'view'] },
-   '/login' : { 'core': ['module'], 'login': ['core', 'view'] },
-   '/:module' : { ':module': ['module'], '': ['todo', 'filter']  },
+   '/'             : { 'core': ['module'], 'home': ['core', 'view'] },
+   '/login'        : { 'core': ['module'], 'login': ['core', 'view'] },
+   '/:module'      : { ':module': ['module'], '': ['todo', 'filter']  },
    '/todo/:filter' : { 'todo': ['module'], ':filter': ['todo', 'filter'] },
 });
 
 
 module.exports['trigger'] = function (test) {
-    router.trigger('/login');
+    addressbar.value = '/login';
+    router.trigger();
     test.deepEqual(controller.get(), {
         module: 'core',
         core: { view: 'login' },
         todo: {}
     });
 
-    router.trigger('/todo');
+    addressbar.value = '/todo';
+    router.trigger();
     test.deepEqual(controller.get(), {
         module: 'todo',
         core: { view: 'login' },
         todo: { filter: '' }
     });
 
-    router.trigger('/todo/active');
+    addressbar.value = '/todo/active';
+    router.trigger();
     test.deepEqual(controller.get(), {
         module: 'todo',
         core: { view: 'login' },
         todo: { filter: 'active' }
     });
 
-    router.trigger('/');
+    addressbar.value = '/';
+    router.trigger();
     test.deepEqual(controller.get(), {
         module: 'core',
         core: { view: 'home' },
@@ -99,3 +103,12 @@ module.exports['signal call'] = function (test) {
 
     test.done();
 };
+
+module.exports['getUrl'] = function(test) {
+    test.equal(controller.signals.routeChanged.getUrl({
+        module: 'todo',
+        core: { view: 'login' },
+        todo: { filter: 'active' }
+    }), '/todo/active');
+    test.done();
+}

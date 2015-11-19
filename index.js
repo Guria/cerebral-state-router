@@ -1,16 +1,27 @@
 var pathToRegexp = require('path-to-regexp');
 var addressbar = require('addressbar');
-var urlMapper = require('url-mapper')();
+var objectPath = require('object-path');
+var urlMapper = require('url-mapper')({ query: true });
 
 function setStore(input, state) {
-    input.params.forEach(function(param){
-        state.set(param.path, param.value);
-    });
+    state.merge([], input.params);
 }
 
 function router (controller, routesConfig, options) {
 
-    function onChange() {
+    options = options || {};
+    
+    if(!routesConfig) {
+        throw new Error('Cerebral router - Routes configuration wasn\'t provided.');
+    }
+    
+    if (!options.baseUrl && options.onlyHash) {
+        // autodetect baseUrl
+        options.baseUrl = addressbar.pathname;
+    }
+    options.baseUrl = (options.baseUrl || '') + (options.onlyHash ? '#' : '');
+
+    function getUrl(state) {
         var url;
         var routes = Object.keys(routesConfig);
         for (var i = 0; i < routes.length; ++i) {
@@ -19,10 +30,11 @@ function router (controller, routesConfig, options) {
 
             var params = Object.keys(routesConfig[route]).reduce(function(initial, key){
                 var path = routesConfig[route][key];
-                var value = controller.get(path);
+                var value = objectPath.get(state, path);
+
                 if (typeof value !== 'undefined') {
                     if (key[0] === ':') {
-                        initial[key.slice(1)] = controller.get(path);
+                        initial[key.slice(1)] = value;
                     } else if (value !== key) {
                         match = false;
                     }
@@ -39,29 +51,75 @@ function router (controller, routesConfig, options) {
             }
         }
 
-        addressbar.value = url;
+        return url;
+    }
+
+    function onControllerChange() {
+        var url = getUrl(controller.get());
+        addressbar.value = options.baseUrl + url;
+    }
+
+    function onUrlChange (event) {
+        var url = event ? event.target.value : addressbar.value;
+        url = url.replace(addressbar.origin, '');
+    
+        if (options.onlyHash && !~url.indexOf('#')) {
+            // treat hash absense as root route
+            url = url + '#/';
+        }
+
+        var matchedRoute = urlMapper.map(url, routesConfig);
+        if (matchedRoute) {
+            var match = matchedRoute.match;
+            var values = matchedRoute.values;
+            var params = Object.keys(match).reduce(function(initial, key){
+                var value;
+                var path = match[key];
+
+                if (key[0] === ':') {
+                    value = values[key.slice(1)];
+                } else {
+                    value = key;
+                }
+
+                objectPath.set(initial, path, value);
+
+                return initial;
+            }, {});
+            controller.signals.routeChanged.sync({
+                params: params
+            });
+        }
     }
 
     controller.signal('routeChanged', [ setStore ]);
-    controller.on('change', onChange);
+    controller.signals.routeChanged.getUrl = getUrl;
+    controller.on('change', onControllerChange);
+    addressbar.on('change', onUrlChange);
     
     return {
-        trigger: function(url) {
-            urlMapper.map(url, routesConfig, function(match, values) {
-                var params = Object.keys(match).map(function(key){
-                    var value;
-                    if (key[0] === ':') {
-                        value = values[key.slice(1)];
-                    } else {
-                        value = key;
-                    }
-                    var path = match[key];
-                    return { path: path, value: value };
-                });
-                controller.signals.routeChanged.sync({
-                    params: params
-                });
-            });
+        trigger: onUrlChange,
+
+        redirect: function(url, params) {
+
+            params = params || {};
+            params.replace = (typeof params.replace === "undefined") ? true : params.replace;
+
+            addressbar.value = {
+                value: options.baseUrl + url,
+                replace: params.replace
+            };
+
+            onUrlChange();
+        },
+
+        getUrl: function() {
+            return addressbar.value.replace(addressbar.origin + options.baseUrl, '');
+        },
+
+        detach: function(){
+            addressbar.removeListener('change', onUrlChange);
+            controller.removeListener('change', onControllerChange);
         }
     };
 }

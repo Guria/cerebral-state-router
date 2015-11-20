@@ -93,7 +93,7 @@ function router (controller, routesConfig, options) {
 
     controller.signal('routeChanged', [ setStore ]);
     controller.signals.routeChanged.getUrl = getUrl;
-    controller.on('change', onControllerChange);
+    controller.on('signalEnd', onControllerChange);
     addressbar.on('change', onUrlChange);
     
     return controller.services.router = {
@@ -118,7 +118,7 @@ function router (controller, routesConfig, options) {
 
         detach: function(){
             addressbar.removeListener('change', onUrlChange);
-            controller.removeListener('change', onControllerChange);
+            controller.removeListener('signalEnd', onControllerChange);
         }
     };
 }

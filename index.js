@@ -67,27 +67,32 @@ function router (controller, routesConfig, options) {
             url = url + '#/';
         }
 
-        var matchedRoute = urlMapper.map(url, routesConfig);
-        if (matchedRoute) {
-            var match = matchedRoute.match;
-            var values = matchedRoute.values;
-            var params = Object.keys(match).reduce(function(initial, key){
-                var value;
-                var path = match[key];
+        // check if url should be routed
+        if (url.indexOf(options.baseUrl) === 0) {
+          event && event.preventDefault();
 
-                if (key[0] === ':') {
-                    value = values[key.slice(1)];
-                } else {
-                    value = key;
-                }
+            var matchedRoute = urlMapper.map(url.replace(options.baseUrl, ''), routesConfig);
+            if (matchedRoute) {
+                var match = matchedRoute.match;
+                var values = matchedRoute.values;
+                var params = Object.keys(match).reduce(function(initial, key){
+                    var value;
+                    var path = match[key];
 
-                objectPath.set(initial, path, value);
+                    if (key[0] === ':') {
+                        value = values[key.slice(1)];
+                    } else {
+                        value = key;
+                    }
 
-                return initial;
-            }, {});
-            controller.signals.routeChanged.sync({
-                params: params
-            });
+                    objectPath.set(initial, path, value);
+
+                    return initial;
+                }, {});
+                controller.signals.routeChanged.sync({
+                    params: params
+                });
+            }
         }
     }
 
